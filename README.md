@@ -1,5 +1,5 @@
 Tools and Technologies:
-
+-
 - AWS EC2: Hosted the project for cloud scalability.
 - MariaDB: Managed relational data and performed ETL transformations.
 - MongoDB: Used for storing and querying aggregated JSON documents.
@@ -8,9 +8,12 @@ Tools and Technologies:
 
 
 Database Schema: ERD 
-
+-
 ![image](https://github.com/user-attachments/assets/9bf15c43-2804-4004-9ed2-7dc94ede6b8a)
 
+
+Milestones or Steps:
+-
 Created SQL scripts for each milestone to perform various operations mentioned below.
 
 Milestone 1: In this milestone, I have setup the infrastructure on AWS EC2 instance. Installed MariaDB database on Linux. After that I have created tables and relationships between them according the ERD diagram. I created tables such as - Customer, City, Product, Order, Order Line, Price history. We have tables and now we have to load the data.
