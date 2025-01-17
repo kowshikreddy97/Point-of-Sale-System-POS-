@@ -1,3 +1,12 @@
+Tools and Technologies:
+
+- AWS EC2: Hosted the project for cloud scalability.
+- MariaDB: Managed relational data and performed ETL transformations.
+- MongoDB: Used for storing and querying aggregated JSON documents.
+- SQL: Wrote complex queries for data extraction and aggregation.
+- Linux: Configured the server environment and automated tasks.
+
+
 Database Schema: ERD 
 
 ![image](https://github.com/user-attachments/assets/9bf15c43-2804-4004-9ed2-7dc94ede6b8a)
