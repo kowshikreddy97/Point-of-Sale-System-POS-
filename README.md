@@ -1,56 +1,16 @@
-ETL and Data Aggregation Project
-This project demonstrates an ETL (Extract, Transform, Load) pipeline deployed on an AWS EC2 instance. The pipeline processes raw customer, order, and product data stored in MariaDB, performs data cleansing, and generates insightful JSON-based nested aggregates. These aggregates are then integrated into MongoDB for scalable storage and advanced querying.
+![image](https://github.com/user-attachments/assets/9bf15c43-2804-4004-9ed2-7dc94ede6b8a)
 
-Features
-ETL Pipeline: Processes and transforms raw data across multiple tables into meaningful insights.
-AWS EC2 Deployment: The entire pipeline is hosted on a cloud instance to ensure scalability and reliability.
-MariaDB: Used for relational data storage, schema design, and generating complex nested JSON aggregates.
-MongoDB Integration: Provides scalable and flexible storage for querying aggregated data.
-JSON Aggregates: Generates nested JSON documents for:
-Customer order history with order details and purchased items.
-Product purchase details, including buyers and order quantities.
-Schema Overview
-Tables
-Product
 
-id: Product ID
-name: Product Name
-currentPrice: Current Price
-availableQuantity: Quantity in Stock
-City
+Milestone 1: I have setup the infrastructure on AWS EC2 instance. Installed MariaDB database. After that I have created tables and relationships between them according the ERD diagram. I created tables such as - Customer, City, Product, Order, Order Line, Price history. We have tables and now we have to load the data.
 
-zip: ZIP Code
-city: City Name
-state: State Name
-Customer
+As part of the milestone 2: I have performed ETL Processes. Extraction part was done by the instructor and provided 4 csv files. First step I have transferred files from his server to mine. After that loaded data into temporary tables (normal tables. Haven’t used temp tables because they will get deleted after the completion of session). Performed all kind of transformations using SQL. such as modifying the ZIP code, replacing some irrelevant characters, removing duplicates etc. After that loaded data in main tables, normalized the data and deleted temp tables.
 
-id: Customer ID
-firstName: First Name
-lastName: Last Name
-email: Email Address
-address1: Primary Address
-address2: Secondary Address (optional)
-phone: Phone Number
-birthdate: Birthdate
-zip: ZIP Code (linked to City)
-Order
+Milestone 3: After loading the data into the database, I created views (virtual tables) to show only relevant information to the users. Created indexes to retrieve the specific information quickly. Materialized views to improve the read performance of the database. 
 
-id: Order ID
-datePlaced: Date the order was placed
-dateShipped: Shipping Date
-customer_id: Linked Customer ID
-Orderline
+Milestone 4: Transactions are one of the key features of the relational database. As part of this milestone, I created a few transactions and explored how COMMIT, Implicit commit and ROLLBACK statements can work. Transactions are used to maintain ACID compliance while performing the operations in the database. I understood how we can leverage transactions in production database. Along with that I implemented prepared statements to prevent SQL injections.
 
-order_id: Linked Order ID
-product_id: Linked Product ID
-quantity: Quantity ordered
-erd
-Aggregates
-Customer Order History: Combines customer information with an array of orders and order details.
-Product Purchase Details: Lists products with an array of customers who purchased them.
-Tools and Technologies
-AWS EC2: Hosted the project for cloud scalability.
-MariaDB: Managed relational data and performed ETL transformations.
-MongoDB: Used for storing and querying aggregated JSON documents.
-SQL: Wrote complex queries for data extraction and aggregation.
-Linux: Configured the server environment and automated tasks.
+Milestone 5: As of this milestone, I created stored procedures which are similar to functions in programming languages. These are used to perform particular tasks repeatedly just by calling whenever needed. 
+
+Milestone 6: As part of this milestone, I have created triggers which are used to perform automation based on the insert/update/delete commands. Triggers are attached to a particular table and whenever that kind of event occurs triggers will execute automatically. We created automations like inserting a new record into price history whenever product price changes etc.
+
+Milestone 7: Cluster is a collection of servers that work together to accomplish a certain task. I have set up a simple replication. I spun up 3 instances - kept one node as master node or primary node which is responsible for all write operations, other 2 nodes are responsible for handling the read requests. With this clustering, we have improved the read performance of the database. But writes are still slow. 
