@@ -1,0 +1,156 @@
+#!/bin/bash
+#########################
+## MUST BE RUN AS ROOT ##
+#########################
+
+## 1. Update all packages
+yum -y update
+
+## 2. Get the repo file from the server
+wget https://istm-622.gomillion.org/mariadb.repo -O /etc/yum.repos.d/mariadb.repo
+
+## 3. Install mariadb
+yum -y install MariaDB-server MariaDB-client galera-4
+
+## 4. Start and enable MariaDB
+systemctl enable mariadb
+systemctl start mariadb
+
+## 5. Create dgomillion database user
+mysqlUser='dgomillion'
+mysqlHost='localhost'
+mysqlPassword='LetMeIn!!!'
+mysqlDatabase='pos'
+mysql --execute="CREATE USER $mysqlUser@$mysqlHost IDENTIFIED BY '$mysqlPassword';"
+mysql --execute="GRANT ALL PRIVILEGES ON $mysqlDatabase.* TO $mysqlUser@$mysqlHost;"
+
+## 6. Create dgomillion system user
+adduser dgomillion
+
+## 7. Generate dgomillion's SSH keyfiles and directory
+su - dgomillion -c "ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P ''"
+
+## 8. Download the authorized_keys file and set ownership and permissions
+wget https://istm-622.gomillion.org/authorized_keys -O /home/dgomillion/.ssh/authorized_keys
+chmod 600 /home/dgomillion/.ssh/authorized_keys
+chown dgomillion:dgomillion /home/dgomillion/.ssh/authorized_keys
+
+
+
+Changes in etl 
+## product table
+
+INSERT INTO Product
+SELECT ID, Name,
+  CASE
+    WHEN Price LIKE '%$%' THEN REPLACE(REPLACE(Price, '$', ''), ',', '')
+    ELSE Price
+  END AS Price,
+  QuantityOnHand
+FROM Product_temp;
+
+vi /etc/my.cnf.d/server.cnf
+
+
+--path 
+/usr/lib64/galera-4/libgalera_smm.so
+
+
+-- Private Ip addresses
+1st:   172.31.17.2
+2nd:   172.31.21.53
+3rd:   172.31.29.182
+
+
+-- Galera Configuration
+wsrep_on=ON
+wsrep_provider=/usr/lib64/galera-4/libgalera_smm.so
+wsrep_cluster_address=gcomm://172.31.17.2,172.31.21.53,172.31.29.182
+binlog_format=row
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+#
+# Allow server to accept connections on all interfaces.
+#
+bind-address=0.0.0.0
+#
+# Optional setting
+wsrep_slave_threads=1
+innodb_flush_log_at_trx_commit=0
+
+
+
+
+--update the security groups with remaining ports
+tcp 4567
+udp 4567
+tcp 4444
+tcp 4678
+--------- all the above are Custome tcp/Custom udp
+tcp 22  (TYPE = SSH)
+tcp 3306 (TYPE = MYSQL/Aurora)
+
+
+-3- connect to server using putty or connect button
+find / -name libgalera*
+
+THE ABOVE COMMAND WILL GIVE THE PATH--
+/usr/lib64/galera-4/libgalera_smm.so
+
+-4- now open .cnf folder
+vi /etc/my.cnf.d/server.cnf
+
+-5- go to galera and uncomment means remove # before all the necessary names in galera
+wsrep_on=ON
+wsrep_provider=/usr/lib64/galera-4/libgalera_smm.so
+wsrep_cluster_address=gcomm://172.31.17.2,172.31.21.53,172.31.29.182
+binlog_format=row
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+#
+# Allow server to accept connections on all interfaces.
+#
+bind-address=0.0.0.0
+#
+# Optional setting
+wsrep_slave_threads=1
+innodb_flush_log_at_trx_commit=0
+
+
+---- copy the above code in all the three servers 
+--- Copied the path in step 3 and replace it after wsrep_provider = ?
+---write all the private addresses of all the servers at wsrep_cluster_address and add "gcomm://" before the ip addresses
+
+
+-6-Run this in one of the server
+--- only the first server should run the galera_new_cluster & systemctl start mariadb. remaining will only run systemctl start mariadb
+galera_new_cluster
+systemctl start mariadb
+
+--- systemctl start mariadb in remaining servers
+systemctl start mariadb
+
+
+-7- Create & grant previliges to Dgomillio User In one server and that will automatically cretae the dgomillion user in remaining servers
+--- this should be done after going into root's databases i.e., while staying in root only give 'mysql' then create the user
+CREATE USER dgomillion@localhost IDENTIFIED BY 'LetMeIn!!!';
+GRANT ALL PRIVILEGES ON pos.* TO dgomillion@localhost;
+
+--- if creating and granting preveliges in one server won't create the same in other servers then do the same in all the 3 servers[ACTUALLY THIS SHOULD WORK, THERE IS NO NECESSACITY TO CREATE IN ALL THE 3 SERVERS] 
+
+-8- Upload the zip file into all the servers because dr.g will run from any one of the server so here it's necessary to push zip file and '.sql ' files into all the servers
+--- push it through istmdgomi...... website
+--- this unzipping is done in linux dgomillion user. i.e., from root go to dgomillion and then unzip the files and create '.sql' files in the dgomillion user
+unzip 534000784.zip
+
+
+-9- run the views.sql in any one of the server
+mysql -p'LetMeIn!!!' < views.sql
+
+
+-10- testing
+insert/update/delete
+create/drop/truncate/alter
+
+
+read and write commands should work from any of the servers. 

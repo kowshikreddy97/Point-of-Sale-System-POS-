@@ -1,0 +1,85 @@
+/* Creating a view called - v_CustomerNames */
+
+CREATE OR REPLACE VIEW v_CustomerNames (Last Name, First Name) 
+AS
+SELECT Customer.FirstName, Customer.LastName 
+FROM Customer 
+ORDER BY LastName, FirstName;
+
+/* Another way */
+
+CREATE OR REPLACE VIEW v_CustomerNames
+AS
+SELECT C.LastName Last Name,
+	   C.FirstName First Name
+FROM Customer C 
+ORDER BY Last Name, First Name;
+
+/* TO VIEW DETAILS OF VIEW */
+
+SELECT * FROM v_CustomerNames;
+
+/* TO DROP THE VIEW */
+
+DROP VIEW v_CustomerNames;
+
+-----------------------------------------------------------------------------------------------
+
+/* Creating a View Called v_Customers */
+
+CREATE OR REPLACE VIEW v_Customers
+AS 
+SELECT C.CustomerID customer_number,
+	   C.FirstName first_name,
+	   C.LastName last_name,
+	   C.Address1 street1,
+	   C.Address2 street2,
+	   S.City City,
+	   S.State ST,
+	   C.Zip zip_code
+FROM Customer C
+LEFT JOIN City S
+ON Customer.Zip = City.Zip;
+
+/* Another Way */
+
+CREATE OR REPLACE v_Customers (customer_number, first_name, last_name, street1, street2, City, ST, zip_code)
+AS 
+SELECT Customer.CustomerID,
+	   Customer.FirstName, 
+	   Customer.LastName,
+	   Customer.Address1,
+	   Customer.Address2,
+	   City.City,
+	   City.State,
+	   Customer.Zip
+FROM Customer
+INNER JOIN City 
+Using (Zip);
+
+-----------------------------------------------------------------------------------------------------------------------
+
+/* Creating a view Called v_ProductBuyers */
+
+CREATE TABLE TEMP_JOIN
+AS
+SELECT Product.ProductID,
+	   Product.Name,
+	   OrderLine.OrderID,
+	   Customer.CustomerID,
+	   Customer.FirstName,
+	   Customer.LastName
+FROM Product 
+LEFT JOIN OrderLine 
+	ON Product.ProductID = OrderLine.ProductID
+INNER JOIN `Order`
+	ON OrderLine.OrderID = `Order`.OrderID
+INNER JOIN Customer
+	ON `Order`.CustomerID = Customer.CustomerID;
+	
+	
+CREATE OR REPLACE VIEW v_ProductBuyers
+AS
+SELECT P.ProductID productID,
+	   P.Name productName,
+	   GROUP_CONCAT( C.CustomerID C.FirstName C.LastName SEPARATOR '') AS "customers"

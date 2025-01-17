@@ -1,0 +1,105 @@
+#!/bin/bash
+#########################
+## MUST BE RUN AS ROOT ##
+#########################
+
+## 1. Update all packages
+yum -y update
+
+## 2. Get the repo file from the server
+wget https://istm-622.gomillion.org/mariadb.repo -O /etc/yum.repos.d/mariadb.repo
+
+## 3. Install mariadb
+yum -y install MariaDB-server MariaDB-client galera-4
+
+## 4. Start and enable MariaDB
+systemctl enable mariadb
+systemctl start mariadb
+
+## 5. Create dgomillion database user
+mysqlUser='dgomillion'
+mysqlHost='localhost'
+mysqlPassword='LetMeIn!!!'
+mysqlDatabase='pos'
+mysql --execute="CREATE USER $mysqlUser@$mysqlHost IDENTIFIED BY '$mysqlPassword';"
+mysql --execute="GRANT ALL PRIVILEGES ON $mysqlDatabase.* TO $mysqlUser@$mysqlHost;"
+
+## 6. Create dgomillion system user
+adduser dgomillion
+
+## 7. Generate dgomillion's SSH keyfiles and directory
+su - dgomillion -c "ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -P ''"
+
+## 8. Download the authorized_keys file and set ownership and permissions
+wget https://istm-622.gomillion.org/authorized_keys -O /home/dgomillion/.ssh/authorized_keys
+chmod 600 /home/dgomillion/.ssh/authorized_keys
+chown dgomillion:dgomillion /home/dgomillion/.ssh/authorized_keys
+
+
+
+1-----Configure these files in Primary
+log-bin
+server_id=10
+log-basename=primary
+binlog-format=mixed
+
+----run this command to start mariadb after changes
+systemctl start mariadb {--for server--}
+
+mysql
+
+CREATE USER 'srini'@'%' IDENTIFIED BY 'Srinivas18';
+GRANT REPLICATION SLAVE ON *.* TO 'srini'@'%';
+
+
+
+-- configure the settings in replica 1
+
+server_id=11
+read_only=1
+
+systemctl start mariadb 
+
+mysql
+
+CHANGE MASTER TO
+  MASTER_HOST='172.31.31.170',
+  MASTER_USER='srini',
+  MASTER_PASSWORD='Srinivas18',
+  MASTER_PORT=3306,
+  MASTER_CONNECT_RETRY=10;
+
+start slave;
+SHOW SLAVE STATUS \G;     -- to know thw status of Slave
+
+
+-- configure the settings in replica 2
+
+server_id=12
+read_only=1
+
+systemctl start mariadb
+
+mysql
+
+CHANGE MASTER TO
+  MASTER_HOST='172.31.31.170',
+  MASTER_USER='srini',
+  MASTER_PASSWORD='Srinivas18',
+  MASTER_PORT=3306,
+  MASTER_CONNECT_RETRY=10;
+
+START SLAVE;
+SHOW SLAVE STATUS \G;      --- to know the status of IP
+
+
+
+----- In primary server create dgomillion user & grant permissions
+  
+CREATE USER dgomillion@$localhost IDENTIFIED BY 'LetMeIn!!!';
+GRANT ALL PRIVILEGES ON pos.* TO dgomillion@localhost;
+
+DROP THE ZIP FILE INTO dgomillion & then copy all the etl.sql, structure.sql, views.sql
+
+Execute the views.sql
+  
